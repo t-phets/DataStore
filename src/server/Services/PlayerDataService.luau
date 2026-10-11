@@ -16,7 +16,7 @@ local PlayerDataService = {} :: PlayerDataServiceTypes
 local sessions: { [number]: ProfileSession } = {}
 
 function PlayerDataService.CreateSession(userId: number, data: PlayerData): ProfileSession
-    assert(sessions[userId], "session already exists for this userId")
+    assert(sessions[userId] == nil, "session already exists for this userId")
     local session: ProfileSession = { data = data, state = "Loaded" }
     sessions[userId] = session
     return session
