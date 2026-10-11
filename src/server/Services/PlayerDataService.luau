@@ -6,17 +6,20 @@ local ProfileSessionTypes = require("../Types/ProfileSessionTypes")
 type PlayerData = PlayerDataTypes.PlayerData
 type ProfileSession = ProfileSessionTypes.ProfileSession
 
-export type PlayerDataServiceTypes = {
+export type PlayerDataService = {
     CreateSession: (userId: number, data: PlayerData) -> ProfileSession,
     GetSession: (userId: number) -> ProfileSession?,
     RemoveSession: (userId: number) -> (),
 }
 
-local PlayerDataService = {} :: PlayerDataServiceTypes
-local sessions: { [number]: ProfileSession } = {}
+local PlayerDataService = {} :: PlayerDataService
+local sessions: { [number]: ProfileSession }
 
 function PlayerDataService.CreateSession(userId: number, data: PlayerData): ProfileSession
-    assert(sessions[userId], "session already exists for this userId")
+    if sessions[userId] ~= nil then
+        error(`session already exists for this userId: {userId}`)
+    end
+
     local session: ProfileSession = { data = data, state = "Loaded" }
     sessions[userId] = session
     return session

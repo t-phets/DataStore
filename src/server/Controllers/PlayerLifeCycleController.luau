@@ -4,26 +4,29 @@ local Players = game:GetService("Players")
 
 local PlayerDataService = require("../Services/PlayerDataService")
 local PlayerDataDefaults = require("../Domain/PlayerDataDefaults")
+local PlayerDataTypes = require("@game/ReplicatedStorage/Shared/Types/PlayerDataTypes")
 
-export type PlayerLifeCycleControllersTypes = {
-    Start: () -> (),
+type PlayerData = PlayerDataTypes.PlayerData
+
+export type PlayerLifeCycleController = {
+    Start: (createInitialData: () -> PlayerData) -> (),
 }
 
-local PlayerLifeCycleController = {} :: PlayerLifeCycleControllersTypes
+local PlayerLifeCycleController = {} :: PlayerLifeCycleController
 
-function PlayerLifeCycleController.Start()
+function PlayerLifeCycleController.Start(createInitialData: () -> PlayerData)
     local function OnPlayerAdded(player: Player)
-        PlayerDataService.CreateSession(player.UserId, PlayerDataDefaults.NewDefault())
+        PlayerDataService.CreateSession(player.UserId, createInitialData())
     end
 
-    local function onPlayerRemoving(player: Player)
+    local function OnPlayerRemoving(player: Player)
         PlayerDataService.RemoveSession(player.UserId)
     end
 
     Players.PlayerAdded:Connect(OnPlayerAdded)
-    Players.PlayerRemoving:Connect(onPlayerRemoving)
+    Players.PlayerRemoving:Connect(OnPlayerRemoving)
 
-    for _, player in Players:GetPlayer() do
+    for _, player: Player in Players:GetPlayers() do
         task.spawn(OnPlayerAdded, player)
     end
 end

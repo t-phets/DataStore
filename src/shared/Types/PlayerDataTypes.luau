@@ -7,13 +7,13 @@ export type InventoryEntry = {
 
 export type PlayerData = {
     schemaVersion: number,
-    coins: number,
-    inventory: { InventoryEntry }
+    stats: { [string]: number },
+    inventory: { InventoryEntry },
 }
 
 export type PublicPlayerData = {
-    coins: number,
-    inventory: { InventoryEntry }
+    stats: { [ string ]: number },
+    inventory: { InventoryEntry },
 }
 
 return {}

@@ -1,9 +1,13 @@
 --!strict
 
 local PlayerDataService = require("./Services/PlayerDataService")
-local CurrencyService = require("./Services/CurrencyService")
+local StatService = require("./Services/StatService")
 local PlayerLifeCycleController = require("./Controllers/PlayerLifeCycleController")
+local PlayerDataDefault = require("./Domain/PlayerDataDefaults")
+local StatDefinitions = require("./Config/StatDefinitions")
 
-local currency = CurrencyService.new(PlayerDataService.GetSession, { maxCoins = 1_000_000 })
+local stats: StatService.StatServiceApi = StatService.new(PlayerDataService.GetSession, StatDefinitions)
 
-PlayerLifeCycleController.Start()
+PlayerLifeCycleController.Start(function()
+    return PlayerDataDefault.NewDefault(StatDefinitions)
+end)

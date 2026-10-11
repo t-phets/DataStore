@@ -2,15 +2,12 @@
 
 local PlayerDataTypes = require("@game/ReplicatedStorage/Shared/Types/PlayerDataTypes")
 
-type PlayerData = PlayerDataTypes.PlayerData
-
 export type SessionState = "Loaded" | "Closing"
+export type SessionFailure = "ProfileNotLoaded" | "PlayerClosing"
 
 export type ProfileSession = {
-    data: PlayerData,
+    data: PlayerDataTypes.PlayerData,
     state: SessionState,
 }
-
-export type SessionFailure = "ProfileNotLoaded" | "PlayerClosing"
 
 return {}
