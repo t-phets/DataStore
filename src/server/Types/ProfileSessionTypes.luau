@@ -10,4 +10,10 @@ export type ProfileSession = {
     state: SessionState,
 }
 
+export type SessionProvider = (userId: number) -> ProfileSession?
+
+export type SessionLookup =
+    { ok: true, session: ProfileSession }
+    | { ok: false, reason: SessionFailure }
+
 return {}

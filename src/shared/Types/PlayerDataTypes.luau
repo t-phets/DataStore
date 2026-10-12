@@ -1,19 +1,14 @@
 --!strict
 
-export type InventoryEntry = {
-    itemId: number,
-    quantity: number,
-}
-
 export type PlayerData = {
     schemaVersion: number,
     stats: { [string]: number },
-    inventory: { InventoryEntry },
+    inventory: { [string]: number },
 }
 
 export type PublicPlayerData = {
-    stats: { [ string ]: number },
-    inventory: { InventoryEntry },
+    stats: { [string]: number },
+    inventory: { [string]: number },
 }
 
 return {}

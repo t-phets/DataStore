@@ -1,11 +1,12 @@
 --!strict
 
 local PlayerDataTypes = require("@game/ReplicatedStorage/Shared/Types/PlayerDataTypes")
+local InventoryTypes = require("../Types/InventoryTypes")
 local StatTypes = require("../Types/StatTypes")
 
 type PlayerData = PlayerDataTypes.PlayerData
 type PublicPlayerData = PlayerDataTypes.PublicPlayerData
-type InventoryEntry = PlayerDataTypes.InventoryEntry
+type ItemDefinition = InventoryTypes.ItemDefinition
 
 type StatDefinition = StatTypes.StatDefinition
 
@@ -15,26 +16,30 @@ export type PlayerDataMapper = {
 
 local PlayerDataMapper = {}
 
-function PlayerDataMapper.ToPublic(data: PlayerData, definitions: { StatDefinition }): PublicPlayerData
-    local stats: { [string]: number } = {}
-    for _, definition: StatDefinition in definitions do
+function PlayerDataMapper.ToPublic(
+    data: PlayerData,
+    stats: { StatDefinition },
+    items: { ItemDefinition }
+): PublicPlayerData
+    local publicStats: { [string]: number } = {}
+    for _, definition: StatDefinition in stats do
         if definition.replicated then
             local value: number? = data.stats[definition.id]
             if value ~= nil then
-                stats[definition.id] = value
+                publicStats[definition.id] = value
             end
         end
     end
 
-    local inventoryCopy: { InventoryEntry } = {}
-    for _, entry: InventoryEntry in data.inventory do
-        table.insert(inventoryCopy, {
-            itemId = entry.itemId,
-            quantity = entry.quantity,
-        })
+    local publicInventory: { [string]: number } = {}
+    for _, item in items do
+        local quantity: number? = data.inventory[item.id]
+        if quantity ~= nil then
+            publicInventory[item.id] = quantity
+        end
     end
 
-    return { stats = stats, inventory = inventoryCopy }
+    return { stats = publicStats, inventory = publicInventory }
 end
 
 return PlayerDataMapper

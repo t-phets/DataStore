@@ -1,15 +1,18 @@
 --!strict
+local ServerScriptService = game:GetService("ServerScriptService")
 
+local AmountRules = require(ServerScriptService.Server.Domain.AmountRules)
 local ProfileSessionTypes = require("../Types/ProfileSessionTypes")
+local SessionAccess = require("./SessionAccess")
 local StatTypes = require("../Types/StatTypes")
 
 type ProfileSession = ProfileSessionTypes.ProfileSession
 type SessionFailure = ProfileSessionTypes.SessionFailure
+type SessionProvider = ProfileSessionTypes.SessionProvider
+type SessionLookup = ProfileSessionTypes.SessionLookup
 type StatDefinition = StatTypes.StatDefinition
 type IncreaseResult = StatTypes.IncreaseResult
 type DecreaseResult = StatTypes.DecreaseResult
-
-export type SessionProvider = (userId: number) -> ProfileSession?
 
 export type StatService = {
     new: (getSession: SessionProvider, definition: { StatDefinition }) -> StatServiceApi,
@@ -20,17 +23,7 @@ export type StatServiceApi = {
     Decrease: (userId: number, statId: string, amount: number) -> DecreaseResult,
 }
 
-type SessionLookup =
-    { ok: true, session: ProfileSession }
-    | { ok: false, reason: SessionFailure }
-
-
 local StatService = {} :: StatService
-
-local function isValidAmount(amount: number, definition: StatDefinition): boolean
-    if not (amount > 0 and amount < math.huge) then return false end
-    return (not definition.integerOnly) or amount == math.floor(amount)
-end
 
 local function indexDefinitions(definitions: { StatDefinition }): { [string]: StatDefinition }
 	local byId: { [string]: StatDefinition } = {}
@@ -60,17 +53,6 @@ end
 
 function StatService.new(getSession: SessionProvider, definitions: { StatDefinition }): StatServiceApi
     local byId: { [string]: StatDefinition } = indexDefinitions(definitions)
-    
-    local function findWritableSession(userId: number): SessionLookup
-        local session: ProfileSession? = getSession(userId)
-        if session == nil then
-            return { ok = false, reason = "ProfileNotLoaded" }
-        end
-        if session.state == "Closing" then
-            return { ok = false, reason = "PlayerClosing" }
-        end
-        return { ok = true, session = session }
-    end
 
     local function readCurrent(session: ProfileSession, statId: string): number
         local current: number? = session.data.stats[statId]
@@ -85,11 +67,11 @@ function StatService.new(getSession: SessionProvider, definitions: { StatDefinit
         if definition == nil then
             return { success = false, reason = "UnknownStat" }
         end
-        if not isValidAmount(amount, definition) then
+        if not AmountRules.IsValid(amount, definition.integerOnly) then
             return { success = false, reason = "InvalidAmount"}
         end
 
-        local lookup: SessionLookup = findWritableSession(userId)
+        local lookup: SessionLookup = SessionAccess.FindWritable(getSession, userId)
         if not lookup.ok then
             return { success = false, reason = lookup.reason }
         end
@@ -110,7 +92,7 @@ function StatService.new(getSession: SessionProvider, definitions: { StatDefinit
             return { success = false, reason = "UnknownStat" }
         end
 
-        if not isValidAmount(amount, definition) then
+        if not AmountRules.IsValid(amount, definition.integerOnly) then
             return { success = false, reason = "InvalidAmount" }
         end
 
@@ -118,7 +100,7 @@ function StatService.new(getSession: SessionProvider, definitions: { StatDefinit
             return { success = false, reason = "DecreaseNotAllowed" }
         end
 
-        local lookup: SessionLookup = findWritableSession(userId)
+        local lookup: SessionLookup = SessionAccess.FindWritable(getSession, userId)
         if not lookup.ok then
             return { success = false, reason = lookup.reason }
         end
