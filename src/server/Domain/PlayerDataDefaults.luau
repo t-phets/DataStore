@@ -1,6 +1,7 @@
 --!strict
 
 local PlayerDataTypes = require("@game/ReplicatedStorage/Shared/Types/PlayerDataTypes")
+local PlayerDataSchema = require("./PlayerDataSchema")
 local StatTypes = require("../Types/StatTypes")
 
 type PlayerData = PlayerDataTypes.PlayerData
@@ -10,8 +11,6 @@ export type PlayerDataDefaults = {
     NewDefault: (definitions: StatDefinition) -> PlayerData,
 }
 
-local CURRENT_SCHEMA_VERSION = 1
-
 local PlayerDataDefaults = {}
 
 function PlayerDataDefaults.NewDefault(definitions: { StatDefinition }): PlayerData
@@ -20,7 +19,7 @@ function PlayerDataDefaults.NewDefault(definitions: { StatDefinition }): PlayerD
         stats[definition.id] = definition.initial
     end
     return {
-        schemaVersion = CURRENT_SCHEMA_VERSION,
+        schemaVersion = PlayerDataSchema.CURRENT_VERSION,
         stats = stats,
         inventory = {},
     }
